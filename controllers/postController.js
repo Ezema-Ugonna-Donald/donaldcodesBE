@@ -1,5 +1,7 @@
 const db = require("../models/index.js")
 
+const { Op } = require("sequelize")
+
 const Post = db.posts
 
 const User = db.users
@@ -41,9 +43,56 @@ const getAllPosts = async (req, res) => {
 const getPostById = async (req, res) => {
     let id = req.params.id
 
-    let post = await Post.findOne({ where: { id: id } })
+    let post = await Post.findOne({ 
+        where: { id: id },
+        include: [{
+            model: User,
+            required: false
+        }],
+        order: [
+            ["id", "DESC"]
+        ]
+     })
 
     res.status(200).send(post)
+}
+
+const getPostsByCategory = async (req, res) => {
+    let categoryname = req.params.categoryname
+
+    let posts = await Post.findAll({ 
+        where: { categories: categoryname },
+        include: [{
+            model: User,
+            required: false
+        }],
+        order: [
+            ["id", "DESC"]
+        ]
+     })
+
+    res.status(200).send(posts)
+}
+
+const searchPosts = async (req, res) => {
+    const search = req.params.searchField
+    const posts = await Post.findAll({
+        where: {
+            [Op.or]: [
+                { title: {
+                  [Op.like]: `%${search}%`
+                }},
+                { categories: {
+                  [Op.like]: `%${search}%`
+                }},
+                { body: {
+                  [Op.like]: `%${search}%`
+                }}
+            ]
+        }
+    })
+
+    res.status(200).send(posts)
 }
 
 const updatePost = async (req, res) => {
@@ -66,6 +115,8 @@ module.exports = {
     addPost,
     getAllPosts,
     getPostById,
+    getPostsByCategory,
+    searchPosts,
     updatePost,
     deletePost
 }

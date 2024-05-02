@@ -1,49 +1,67 @@
-module.exports = (sequelize, DataTypes) => {
-    const Categories = sequelize.define("category", {
-        id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            autoIncrement: true
-        },
-        user_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false
-        },
-        title: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        category: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        postImage: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        body: {
-            type: DataTypes.TEXT,
-            allowNull: false
-        },
-        no_approved_comments: {
-            type: DataTypes.INTEGER,
-            allowNull: false
-        },
-        created_at: {
-            type: DataTypes.DATETIME,
-            allowNull: false,
-            defaultValue: DataTypes.NOW
-        },
-        updated_at: {
-            type: DataTypes.DATETIME,
-            allowNull: false,
-            defaultValue: DataTypes.NOW
-        }
+const db = require("../models/index.js")
 
-    },
-    {
-        timestamps: false
+const Category = db.categories
+
+const User = db.users
+
+User.hasMany(Category, { foreignKey: "user_id" })
+Category.belongsTo(User, { foreignKey: "user_id" })
+
+const addCategory = async (req, res) => {
+    let data = {
+        user_id: req.body.user_id,
+        categoryname: req.body.categoryname
+    }
+
+    const category = await Category.create(data)
+
+    res.status(201).send({"message": "Category Created Successfully"})
+
+    console.log(category)
+}
+
+const getAllCategories = async (req, res) => {
+    let categories = await Category.findAll({
+        include: [{
+            model: User,
+            required: false
+        }],
+        order: [
+            ["id", "DESC"]
+        ]
     })
 
-    return Posts
+    res.status(200).send(categories)
+}
+
+const getCategoryById = async (req, res) => {
+    let id = req.params.id
+
+    let category = await Category.findOne({ 
+        where: { id: id },
+        include: [{
+            model: User,
+            required: false
+        }],
+        order: [
+            ["id", "DESC"]
+        ]
+     })
+
+    res.status(200).send(category)
+}
+
+const deleteCategory = async (req, res) => {
+    let id = req.params.id
+
+    await Category.destroy({ where: { id: id } })
+
+    res.status(200).send({"message": "Category Deleted Successfully"})
+}
+
+module.exports = {
+    addCategory,
+    getAllCategories,
+    getCategoryById,
+    deleteCategory
 }
