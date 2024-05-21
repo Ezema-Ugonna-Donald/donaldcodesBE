@@ -23,7 +23,7 @@ const addPost = async (req, res) => {
 
     res.status(201).send({"message": "Post Created Successfully"})
 
-    console.log(post)
+    // console.log(post)
 }
 
 const getAllPosts = async (req, res) => {
