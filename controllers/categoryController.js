@@ -51,6 +51,14 @@ const getCategoryById = async (req, res) => {
     res.status(200).send(category)
 }
 
+const updateCategory = async (req, res) => {
+    let id = req.params.id
+    
+    const category = await Category.update(req.body, { where: { id: id } })
+
+    res.status(200).send({"message": "Category Updated Successfully"})
+}
+
 const deleteCategory = async (req, res) => {
     let id = req.params.id
 
@@ -63,5 +71,6 @@ module.exports = {
     addCategory,
     getAllCategories,
     getCategoryById,
+    updateCategory, 
     deleteCategory
 }

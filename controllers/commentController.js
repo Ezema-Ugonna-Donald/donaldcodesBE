@@ -1,3 +1,4 @@
+const { where } = require("sequelize")
 const db = require("../models/index.js")
 const { addPost } = require("./postController.js")
 
@@ -72,9 +73,44 @@ const getAllDisapprovedComments = async (req, res) => {
     res.status(200).send(comment)
 }
 
+const setApprovedCommentById = async (req, res) => {
+    const id = req.body.id
+
+    await Comment.update({
+        status: "ON"
+    }, {
+        where: { id: id }
+    })
+
+    res.status(200).send({"message": "Comment Set to Approved Successfully"})
+}
+
+const setDisapprovedCommentById = async (req, res) => {
+    const id = req.body.id
+
+    await Comment.update({
+        status: "OFF"
+    }, {
+        where: { id: id }
+    })
+
+    res.status(200).send({"message": "Comment Set to Disapproved Successfully"})
+}
+
+const deleteCommentById = async (req, res) => {
+    const id = req.params.id
+
+    await Comment.destroy({ where: { id: id } })
+
+    res.status(200).send({"message": "Comment Deleted Successfully"})
+}
+
 module.exports = {
     getAllCommentsByPostId,
     addComent,
     getAllApprovedComments,
-    getAllDisapprovedComments
+    getAllDisapprovedComments,
+    setApprovedCommentById,
+    setDisapprovedCommentById,
+    deleteCommentById
 }

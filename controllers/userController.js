@@ -12,24 +12,16 @@ dotenv.config()
 const User = db.users
 
 const login = async (req, res) => {
-    // const hashKey = crypto.createHash("sha256")
-    // hashKey.update("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-    // const key = hashKey.digest("hex").substring(0, 32)
-    // const key = ""
-    // const key = atob("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-    // // const hashIV = crypto.createHash("sha256")
-    // // hashIV.update("1234567812345678")
-    // // const iv = hashIv.digest("hex").substring(0, 16)
-    // const iv = "1234567812345678"
-
-    // const cipher = crypto.createCipheriv("aes-128-cbc", key, iv)
-    // let encrypted = cipher.update(req.body.password, "utf-8", "base64")
-    // encrypted += cipher.final("base64")
-    // encrypted = Buffer.from(encrypted, "utf-8").toString("base64")
-
+    const hash = crypto.pbkdf2Sync(
+        req.body.password, 
+        process.env.SALT, 
+        Number(process.env.ITERATIONS),
+        256,
+        "sha256"
+    )
+    
     const email = req.body.email
-    const password = req.body.password
+    const password = hash
 
     let user = await User.findOne({
         where: { email: email, password: password}
@@ -38,11 +30,93 @@ const login = async (req, res) => {
     const token = jwt.sign({ name: email }, process.env.TOKEN_SECRET, { expiresIn: "7d" })
 
     res.status(200).send({
-        user: user,
-        accessToken: token
+        "user": user,
+        "accessToken": token,
+        "message": "Logged in successfully"
     })
 }
 
+const addAdmin = async (req, res) => {
+    const hash = crypto.pbkdf2Sync(
+        req.body.password, 
+        process.env.SALT, 
+        Number(process.env.ITERATIONS),
+        256,
+        "sha256"
+    )
+    
+    let data = {
+        name: req.body.name,
+        email: req.body.email,
+        password: hash,
+        created_by: req.body.created_by 
+    }
+
+    const user = await User.create(data)
+
+    res.status(201).send({"message": "Admin Added Successfully"})
+}
+
+const getAdminUsers = async (req, res) => {
+    let users = await User.findAll({
+        order: [
+            ["id", "DESC"]
+        ]
+    })
+
+    res.status(200).send(users)
+}
+
+const getAdminUserById = async (req, res) => {
+    let id = req.params.id
+
+    let user = await User.findOne({ 
+        where: { id: id },
+        order: [
+            ["id", "DESC"]
+        ]
+     })
+
+    res.status(200).send(user)
+}
+
+const updateUser = async (req, res) => {
+    let id = req.params.id
+
+    // console.log(process.env.SALT)
+    const hash = crypto.pbkdf2Sync(
+        req.body.password, 
+        process.env.SALT, 
+        Number(process.env.ITERATIONS),
+        256,
+        "sha256"
+    )
+    
+    let data = {
+        name: req.body.name,
+        email: req.body.email,
+        password: hash,
+        created_by: req.body.created_by
+    }
+    
+    const user = await User.update(data, { where: { id: id } })
+
+    res.status(200).send({"message": "User Updated Successfully"})
+}
+
+const deleteAdmin = async (req, res) => {
+    let id = req.params.id
+
+    await User.destroy({ where: { id: id } })
+
+    res.status(200).send({"message": "Admin Deleted Successfully"})
+}
+
 module.exports = {
-    login
+    login,
+    addAdmin,
+    getAdminUsers,
+    getAdminUserById,
+    updateUser,
+    deleteAdmin
 }

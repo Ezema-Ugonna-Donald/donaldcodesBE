@@ -14,7 +14,7 @@ const addPost = async (req, res) => {
         user_id: req.body.user_id,
         title: req.body.title,
         categories: req.body.categories,
-        postImage: req.body.postImage,
+        post_image: req.body.post_image,
         body: req.body.body,
         no_approved_comments: 0
     }

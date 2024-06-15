@@ -14,7 +14,7 @@ router.get("/view/category/:categoryname", postController.getPostsByCategory)
 
 router.get("/view/search/:searchField", postController.searchPosts)
 
-router.put("/:id", postController.updatePost)
+router.patch("/:id", postController.updatePost)
 
 router.delete("/:id", postController.deletePost)
 
