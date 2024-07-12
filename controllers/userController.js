@@ -16,15 +16,20 @@ const login = async (req, res) => {
         req.body.password, 
         process.env.SALT, 
         Number(process.env.ITERATIONS),
-        256,
-        "sha256"
-    )
+        64,
+        "sha512"
+    ).toString("hex")
+
+    // const hash = crypto.createHash("sha256")
+    //             .update(req.body.password)
+    //             .update(createHash("sha256").update(process.env.SALT, "utf8").digest("hex"))
+    //             .digest("hex")
     
     const email = req.body.email
     const password = hash
 
     let user = await User.findOne({
-        where: { email: email, password: password}
+        where: { email: email, password: password} 
     })
 
     const token = jwt.sign({ name: email }, process.env.TOKEN_SECRET, { expiresIn: "7d" })
@@ -41,9 +46,14 @@ const addAdmin = async (req, res) => {
         req.body.password, 
         process.env.SALT, 
         Number(process.env.ITERATIONS),
-        256,
-        "sha256"
-    )
+        64,
+        "sha512"
+    ).toString("hex")
+
+    // const hash = crypto.createHash("sha256")
+    //             .update(req.body.password)
+    //             .update(createHash("sha256").update(process.env.SALT, "utf8").digest("hex"))
+    //             .digest("hex")
     
     let data = {
         name: req.body.name,
@@ -88,9 +98,14 @@ const updateUser = async (req, res) => {
         req.body.password, 
         process.env.SALT, 
         Number(process.env.ITERATIONS),
-        256,
-        "sha256"
-    )
+        64,
+        "sha512"
+    ).toString("hex")
+
+    // const hash = crypto.createHash("sha256")
+    //             .update(req.body.password)
+    //             .update(createHash("sha256").update(process.env.SALT, "utf8").digest("hex"))
+    //             .digest("hex")
     
     let data = {
         name: req.body.name,
