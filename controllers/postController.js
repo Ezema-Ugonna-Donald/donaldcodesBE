@@ -6,10 +6,24 @@ const Post = db.posts
 
 const User = db.users
 
+const jwt = require("./../middleware/index.js")
+
 User.hasMany(Post, { foreignKey: "user_id" })
 Post.belongsTo(User, { foreignKey: "user_id" })
 
 const addPost = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
+    // req.user = result.data
+        
     let data = {
         user_id: req.body.user_id,
         title: req.body.title,
@@ -96,6 +110,16 @@ const searchPosts = async (req, res) => {
 }
 
 const updatePost = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let id = req.params.id
     
     const post = await Post.update(req.body, { where: { id: id } })
@@ -104,6 +128,17 @@ const updatePost = async (req, res) => {
 }
 
 const deletePost = async (req, res) => {
+    console.log("deleting")
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+        
     let id = req.params.id
 
     await Post.destroy({ where: { id: id } })

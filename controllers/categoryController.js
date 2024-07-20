@@ -7,7 +7,19 @@ const User = db.users
 User.hasMany(Category, { foreignKey: "user_id" })
 Category.belongsTo(User, { foreignKey: "user_id" })
 
+const jwt = require("./../middleware/index.js")
+
 const addCategory = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let data = {
         user_id: req.body.user_id,
         categoryname: req.body.categoryname
@@ -35,6 +47,16 @@ const getAllCategories = async (req, res) => {
 }
 
 const getCategoryById = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let id = req.params.id
 
     let category = await Category.findOne({ 
@@ -52,6 +74,16 @@ const getCategoryById = async (req, res) => {
 }
 
 const updateCategory = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let id = req.params.id
     
     const category = await Category.update(req.body, { where: { id: id } })
@@ -60,6 +92,16 @@ const updateCategory = async (req, res) => {
 }
 
 const deleteCategory = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let id = req.params.id
 
     await Category.destroy({ where: { id: id } })

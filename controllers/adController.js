@@ -7,7 +7,19 @@ const User = db.users
 User.hasMany(Ad, { foreignKey: "user_id" })
 Ad.belongsTo(User, { foreignKey: "user_id" })
 
+const jwt = require("./../middleware/index.js")
+
 const createAd = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let data = {
         user_id: req.body.user_id,
         companyname: req.body.companyname,
@@ -38,6 +50,16 @@ const getAllAds = async (req, res) => {
 }
 
 const updateAd = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let id = req.params.id
     
     const ad = await Ad.update(req.body, { where: { id: id } })
@@ -46,6 +68,16 @@ const updateAd = async (req, res) => {
 }
 
 const deleteAd = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+        
     let id = req.params.id
 
     await Ad.destroy({ where: { id: id } })

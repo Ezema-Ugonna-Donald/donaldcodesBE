@@ -9,6 +9,8 @@ const Post = db.posts
 Post.hasMany(Comment, { foreignKey: "post_id" })
 Comment.belongsTo(Post, { foreignKey: "post_id" })
 
+const jwt = require("./../middleware/index.js")
+
 const getAllCommentsByPostId = async (req, res) => {
     let postId = req.params.postId
 
@@ -61,6 +63,16 @@ const getAllApprovedComments = async (req, res) => {
 
 const getAllDisapprovedComments = async (req, res) => {
 
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let comment = await Comment.findAll({ 
         where: { 
             status: "OFF" 
@@ -74,6 +86,16 @@ const getAllDisapprovedComments = async (req, res) => {
 }
 
 const setApprovedCommentById = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     const id = req.body.id
 
     await Comment.update({
@@ -86,6 +108,16 @@ const setApprovedCommentById = async (req, res) => {
 }
 
 const setDisapprovedCommentById = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     const id = req.body.id
 
     await Comment.update({
@@ -98,6 +130,16 @@ const setDisapprovedCommentById = async (req, res) => {
 }
 
 const deleteCommentById = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     const id = req.params.id
 
     await Comment.destroy({ where: { id: id } })

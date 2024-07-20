@@ -4,10 +4,12 @@ const db = require("../models/index.js")
 
 const crypto = require("crypto")
 
-const jwt = require("jsonwebtoken")
+// const jwt = require("jsonwebtoken")
 
 const dotenv = require("dotenv")
 dotenv.config()
+
+const jwt = require("./../middleware/index.js")
 
 const User = db.users
 
@@ -32,16 +34,35 @@ const login = async (req, res) => {
         where: { email: email, password: password} 
     })
 
-    const token = jwt.sign({ name: email }, process.env.TOKEN_SECRET, { expiresIn: "7d" })
+    if (user !== null)
+    {
+        const token = jwt.generateAccessToken(user)
 
-    res.status(200).send({
-        "user": user,
-        "accessToken": token,
-        "message": "Logged in successfully"
-    })
+        res.status(200).send({
+            user: user,
+            accessToken: token,
+            message: "Logged in successfully" 
+        })
+    }
+    else
+    {
+        res.status(401).send({
+            "message": "Incorrect username/password"
+        })
+    }
 }
 
-const addAdmin = async (req, res) => {
+const addAdmin = async (req, res, next) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     const hash = crypto.pbkdf2Sync(
         req.body.password, 
         process.env.SALT, 
@@ -68,6 +89,18 @@ const addAdmin = async (req, res) => {
 }
 
 const getAdminUsers = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    console.log("toekn", token)
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let users = await User.findAll({
         order: [
             ["id", "DESC"]
@@ -78,6 +111,16 @@ const getAdminUsers = async (req, res) => {
 }
 
 const getAdminUserById = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let id = req.params.id
 
     let user = await User.findOne({ 
@@ -91,6 +134,16 @@ const getAdminUserById = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+
     let id = req.params.id
 
     // console.log(process.env.SALT)
@@ -120,6 +173,16 @@ const updateUser = async (req, res) => {
 }
 
 const deleteAdmin = async (req, res) => {
+    const authHeader = req.headers["authorization"]
+
+    const token = authHeader && authHeader.split(" ")[1]
+
+    if (!token) return res.status(401).send("Unauthorized")
+
+    const result = jwt.verifyAccessToken(token)
+
+    if (!result.success) return res.status(403).json({ error: result.error })
+        
     let id = req.params.id
 
     await User.destroy({ where: { id: id } })
